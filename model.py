@@ -1,0 +1,38 @@
+from __future__ import print_function
+import argparse
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class Custom_Network(nn.Module):
+	def __init__(self):
+		#super() function makes class inheritance more manageable and extensible
+		super(Custom_Network, self).__init__()
+
+		self.conv1 = nn.Conv2d(in_channels = 3, out_channels = 10, kernel_size = 3, stride = 1, padding = 0, padding_mode='zeros')
+		self.conv2 = nn.Conv2d(in_channels = 10, out_channels = 15, kernel_size = 6, stride = 1, padding = 0, padding_mode='zeros')
+		self.conv3 = nn.Conv2d(in_channels = 15, out_channels = 20, kernel_size = 3, stride = 2, padding = 0, padding_mode='zeros')
+		self.max1 = nn.MaxPool2d(kernel_size = 2)
+		self.relu = nn.ReLU()
+		self.linear1 = nn.Linear(20*6*6,100)
+		self.linear2 = nn.Linear(100,20)
+		self.linear3 = nn.Linear(20,2)
+
+	def forward(self, x):
+		x = self.conv1(x)
+		x = self.max1(x)
+		x = self.conv2(x)
+		x = self.max1(x)
+		x = self.conv3(x)
+
+		x = torch.flatten(x,1)
+		
+		x = self.relu(x)
+		x = self.linear1(x)
+		x = self.relu(x)
+		x = self.linear2(x)
+		x = self.relu(x)
+		x = self.linear3(x)
+
+		output = F.log_softmax(x, dim = 1)
+		return output
